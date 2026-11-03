@@ -1,6 +1,6 @@
 /** Implementation of string conversions.
  *
- * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+ * Copyright (c) 2000-2025, Jeroen T. Vermeulen.
  *
  * See COPYING for copyright license.  If you did not receive a file called
  * COPYING with this source code, please notify the distributor of this
@@ -48,13 +48,6 @@ constexpr bool have_thread_local{
 #  endif
 };
 #endif
-
-
-/// String comparison between string_view.
-constexpr inline bool equal(std::string_view lhs, std::string_view rhs)
-{
-  return lhs.compare(rhs) == 0;
-}
 
 
 /// The lowest possible value of integral type T.
@@ -138,13 +131,14 @@ wrap_to_chars(char *begin, char *end, T const &value)
   {
   case std::errc::value_too_large:
     throw pqxx::conversion_overrun{
-      "Could not convert " + pqxx::type_name<T> +
+      "Could not convert " + std::string{pqxx::name_type<T>()} +
       " to string: "
       "buffer too small (" +
       pqxx::to_string(end - begin) + " bytes)."};
   default:
     throw pqxx::conversion_error{
-      "Could not convert " + pqxx::type_name<T> + " to string."};
+      "Could not convert " + std::string{pqxx::name_type<T>()} +
+      " to string."};
   }
   // No need to check for overrun here: we never even told to_chars about that
   // last byte in the buffer, so it didn't get used up.
@@ -158,6 +152,7 @@ wrap_to_chars(char *begin, char *end, T const &value)
 namespace pqxx::internal
 {
 template<typename T>
+// NOLINTNEXTLINE(readability-non-const-parameter)
 zview integral_traits<T>::to_buf(char *begin, char *end, T const &value)
 {
   static_assert(std::is_integral_v<T>);
@@ -165,7 +160,7 @@ zview integral_traits<T>::to_buf(char *begin, char *end, T const &value)
     need{static_cast<ptrdiff_t>(size_buffer(value))};
   if (space < need)
     throw conversion_overrun{
-      "Could not convert " + type_name<T> +
+      "Could not convert " + std::string{name_type<T>()} +
       " to string: "
       "buffer too small.  " +
       pqxx::internal::state_buffer_overrun(space, need)};
@@ -236,18 +231,25 @@ std::string demangle_type_name(char const raw[])
   // We've got __cxa_demangle.  Use it to get a friendlier type name.
   int status{0};
 
+  // We can't just pass std::free as a deleter because of subtle differences
+  // in the function's type across implementations.
+  static constexpr auto release{[](char *x) { std::free(x); }};
+
   // We've seen this fail on FreeBSD 11.3 (see #361).  Trying to throw a
   // meaningful exception only made things worse.  So in case of error, just
   // fall back to the raw name.
   //
   // When __cxa_demangle fails, it's guaranteed to return null.
-  std::unique_ptr<char, void (*)(char *)> const demangled{
-    abi::__cxa_demangle(raw, nullptr, nullptr, &status),
-    [](char *x) { std::free(x); }};
-#else
-  std::unique_ptr<char> demangled{};
+  //
+  // Oh, and don't bother trying to pass in a "length" argument.  That's only
+  // for the length of the buffer, not the length of the string.
+  std::unique_ptr<char[], decltype(release)> const str{
+    abi::__cxa_demangle(raw, nullptr, nullptr, &status), release};
+
+  if (str)
+    return std::string{str.get()};
 #endif
-  return std::string{demangled ? demangled.get() : raw};
+  return raw;
 }
 
 
@@ -294,34 +296,37 @@ template<typename TYPE>
 
   TYPE out{};
   auto const res{std::from_chars(here, end, out)};
-  if (res.ec == std::errc() and res.ptr == end)
-    PQXX_LIKELY
-  return out;
-
-  std::string msg;
-  if (res.ec == std::errc())
+  if (res.ec != std::errc() or res.ptr != end)
   {
-    msg = "Could not parse full string.";
-  }
-  else
-  {
-    switch (res.ec)
+    std::string msg;
+    if (res.ec == std::errc())
     {
-    case std::errc::result_out_of_range: msg = "Value out of range."; break;
-    case std::errc::invalid_argument: msg = "Invalid argument."; break;
-    default: break;
+      msg = "Could not parse full string.";
     }
-  }
+    else
+    {
+      switch (res.ec)
+      {
+      case std::errc::result_out_of_range: msg = "Value out of range."; break;
+      case std::errc::invalid_argument: msg = "Invalid argument."; break;
+      default: break;
+      }
+    }
 
-  auto const base{
-    "Could not convert '" + std::string(in) +
-    "' "
-    "to " +
-    pqxx::type_name<TYPE>};
-  if (std::empty(msg))
-    throw pqxx::conversion_error{base + "."};
+    auto const base{
+      "Could not convert '" + std::string(in) +
+      "' "
+      "to " +
+      std::string{pqxx::name_type<TYPE>()}};
+    if (std::empty(msg))
+      throw pqxx::conversion_error{base + "."};
+    else
+      throw pqxx::conversion_error{base + ": " + msg};
+  }
   else
-    throw pqxx::conversion_error{base + ": " + msg};
+  {
+    PQXX_LIKELY return out;
+  }
 }
 #endif
 } // namespace
@@ -417,7 +422,8 @@ template<typename T>
 {
   if (std::size(text) == 0)
     throw pqxx::conversion_error{
-      "Attempt to convert empty string to " + pqxx::type_name<T> + "."};
+      "Attempt to convert empty string to " +
+      std::string{pqxx::name_type<T>()} + "."};
 
   char const *const data{std::data(text)};
   std::size_t i{0};
@@ -433,7 +439,7 @@ template<typename T>
   for (; i < std::size(text) and (data[i] == ' ' or data[i] == '\t'); ++i);
   if (i == std::size(text))
     throw pqxx::conversion_error{
-      "Converting string to " + pqxx::type_name<T> +
+      "Converting string to " + std::string{pqxx::name_type<T>()} +
       ", but it contains only whitespace."};
 
   char const initial{data[i]};
@@ -449,12 +455,13 @@ template<typename T>
   {
     if constexpr (not std::is_signed_v<T>)
       throw pqxx::conversion_error{
-        "Attempt to convert negative value to " + pqxx::type_name<T> + "."};
+        "Attempt to convert negative value to " +
+        std::string{pqxx::name_type<T>()} + "."};
 
     ++i;
     if (i >= std::size(text))
       throw pqxx::conversion_error{
-        "Converting string to " + pqxx::type_name<T> +
+        "Converting string to " + std::string{pqxx::name_type<T>()} +
         ", but it contains only a sign."};
     for (; i < std::size(text) and pqxx::internal::is_digit(data[i]); ++i)
       result = absorb_digit_negative(
@@ -463,7 +470,7 @@ template<typename T>
   else
   {
     throw pqxx::conversion_error{
-      "Could not convert string to " + pqxx::type_name<T> +
+      "Could not convert string to " + std::string{pqxx::name_type<T>()} +
       ": "
       "'" +
       std::string{text} + "'."};
@@ -471,7 +478,7 @@ template<typename T>
 
   if (i < std::size(text))
     throw pqxx::conversion_error{
-      "Unexpected text after " + pqxx::type_name<T> +
+      "Unexpected text after " + std::string{pqxx::name_type<T>()} +
       ": "
       "'" +
       std::string{text} + "'."};
@@ -487,8 +494,8 @@ namespace
 {
 constexpr bool valid_infinity_string(std::string_view text) noexcept
 {
-  return equal("infinity", text) or equal("Infinity", text) or
-         equal("INFINITY", text) or equal("inf", text);
+  return text == "inf" or text == "infinity" or text == "INFINITY" or
+         text == "Infinity";
 }
 
 
@@ -532,7 +539,8 @@ inline T PQXX_COLD from_string_awful_float(std::string_view text)
 {
   if (std::empty(text))
     throw pqxx::conversion_error{
-      "Trying to convert empty string to " + pqxx::type_name<T> + "."};
+      "Trying to convert empty string to " +
+      std::string{pqxx::name_type<T>()} + "."};
 
   bool ok{false};
   T result;
@@ -623,6 +631,7 @@ zview float_traits<T>::to_buf(char *begin, char *end, T const &value)
         "buffer too small.  " +
         state_buffer_overrun(have, need)};
     text.copy(begin, need);
+    begin[need - 1] = '\0';
     return zview{begin, std::size(text)};
   }
 #endif
@@ -768,12 +777,12 @@ bool pqxx::string_traits<bool>::from_string(std::string_view text)
     break;
 
   case std::size("true"sv):
-    if (equal(text, "true") or equal(text, "TRUE"))
+    if (text == "true" or text == "TRUE")
       result = true;
     break;
 
   case std::size("false"sv):
-    if (equal(text, "false") or equal(text, "FALSE"))
+    if (text == "false" or text == "FALSE")
       result = false;
     break;
 

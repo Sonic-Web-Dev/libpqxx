@@ -78,6 +78,7 @@ runner_SOURCES = \
   test88.cxx \
   test89.cxx \
   test90.cxx \
+  test_connection_string.cxx \
   unit/test_array.cxx \
   unit/test_binarystring.cxx \
   unit/test_blob.cxx \
@@ -95,6 +96,7 @@ runner_SOURCES = \
   unit/test_float.cxx \
   unit/test_largeobject.cxx \
   unit/test_nonblocking_connect.cxx \
+  unit/test_notice_handler.cxx \
   unit/test_notification.cxx \
   unit/test_pipeline.cxx \
   unit/test_prepared_statement.cxx \

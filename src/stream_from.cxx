@@ -2,7 +2,7 @@
  *
  * pqxx::stream_from enables optimized batch reads from a database table.
  *
- * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+ * Copyright (c) 2000-2025, Jeroen T. Vermeulen.
  *
  * See COPYING for copyright license.  If you did not receive a file called
  * COPYING with this source code, please notify the distributor of this
@@ -202,7 +202,7 @@ void pqxx::stream_from::parse_line()
   // its buffer.
   m_row.resize(line_size + 1);
 
-  char const *line_begin{line.get()};
+  char const *const line_begin{line.get()};
   std::string_view const line_view{line_begin, line_size};
 
   // Output iterator for unescaped text.
@@ -225,6 +225,7 @@ void pqxx::stream_from::parse_line()
   while (offset < line_size)
   {
     auto const stop_char{m_char_finder(line_view, offset)};
+    assert(stop_char <= line_size);
     // Copy the text we have so far.  It's got no special characters in it.
     std::memcpy(write, &line_begin[offset], stop_char - offset);
     write += (stop_char - offset);

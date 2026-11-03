@@ -4,7 +4,7 @@
  *
  * DO NOT INCLUDE THIS FILE DIRECTLY; include pqxx/stream_from instead.
  *
- * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+ * Copyright (c) 2000-2025, Jeroen T. Vermeulen.
  *
  * See COPYING for copyright license.  If you did not receive a file called
  * COPYING with this source code, please notify the distributor of this
@@ -356,7 +356,7 @@ inline void stream_from::extract_value(Tuple &t) const
     if constexpr (nullity::has_null)
       std::get<index>(t) = nullity::null();
     else
-      internal::throw_null_conversion(type_name<field_type>);
+      internal::throw_null_conversion(name_type<field_type>());
   }
   else
   {

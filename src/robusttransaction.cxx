@@ -2,7 +2,7 @@
  *
  * pqxx::robusttransaction is a slower but safer transaction class.
  *
- * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+ * Copyright (c) 2000-2025, Jeroen T. Vermeulen.
  *
  * See COPYING for copyright license.  If you did not receive a file called
  * COPYING with this source code, please notify the distributor of this
@@ -31,7 +31,7 @@ using namespace std::literals;
 
 namespace
 {
-using pqxx::operator"" _zv;
+using pqxx::operator""_zv;
 
 /// Statuses in which we may find our transaction.
 /** There's also "in the future," but it manifests as an error, not as an

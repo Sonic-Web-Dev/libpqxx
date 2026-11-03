@@ -4,6 +4,7 @@ PACKAGE_NAME	internal	autotools
 PACKAGE_STRING	internal	autotools
 PACKAGE_TARNAME	internal	autotools
 PACKAGE_VERSION	internal	autotools
+PQXX_HAVE_ASSUME	public	compiler
 PQXX_HAVE_CHARCONV_INT	internal	compiler
 PQXX_HAVE_CHARCONV_FLOAT	internal	compiler
 PQXX_HAVE_CMP	public	compiler
@@ -15,6 +16,7 @@ PQXX_HAVE_MULTIDIM	public	compiler
 PQXX_HAVE_LIKELY	public	compiler
 PQXX_HAVE_PATH	public	compiler
 PQXX_HAVE_POLL       internal        compiler
+PQXX_HAVE_RANGES	public	compiler
 PQXX_HAVE_SLEEP_FOR	internal	compiler
 PQXX_HAVE_SOURCE_LOCATION	public	compiler
 PQXX_HAVE_SPAN	public	compiler

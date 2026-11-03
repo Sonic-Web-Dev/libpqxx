@@ -1,3 +1,5 @@
+#include <iterator>
+
 #include <pqxx/transaction>
 
 #include "../test_helpers.hxx"
@@ -8,8 +10,10 @@ void test_row()
 {
   pqxx::connection cx;
   pqxx::work tx{cx};
-  pqxx::result rows{tx.exec("SELECT 1, 2, 3")};
-  pqxx::row r{rows[0]};
+  pqxx::row r{tx.exec("SELECT 1, 2, 3").one_row()};
+#if defined(PQXX_HAVE_CONCEPTS)
+  static_assert(std::forward_iterator<decltype(r.begin())>);
+#endif
   PQXX_CHECK_EQUAL(std::size(r), 3, "Unexpected row size.");
   PQXX_CHECK_EQUAL(r.at(0).as<int>(), 1, "Wrong value at index 0.");
   PQXX_CHECK(std::begin(r) != std::end(r), "Broken row iteration.");
@@ -56,7 +60,7 @@ void test_row_iterator()
 
 void test_row_as()
 {
-  using pqxx::operator"" _zv;
+  using pqxx::operator""_zv;
 
   pqxx::connection cx;
   pqxx::work tx{cx};
@@ -93,8 +97,35 @@ void test_row_iterator_array_index_offsets_iterator()
 }
 
 
+void test_row_as_tuple()
+{
+  pqxx::connection cx;
+  pqxx::work tx{cx};
+
+  auto const r{tx.exec("SELECT 1, 'Alice'").one_row()};
+
+  // A tuple type with matching number and types of columns.
+  using correct_tuple_t = std::tuple<int, std::string>;
+  // A tuple type with the wrong number of columns.
+  using incorrect_tuple_t = std::tuple<int>;
+
+  PQXX_CHECK_EQUAL(r.size(), 2, "Unexpected row size.");
+  correct_tuple_t t{r.as_tuple<correct_tuple_t>()};
+
+  PQXX_CHECK_EQUAL(std::get<0>(t), 1, "Incorrect type for tuple value 0");
+  PQXX_CHECK_EQUAL(
+    std::get<1>(t), "Alice", "Incorrect type for tuple value 1");
+
+  PQXX_CHECK_THROWS(
+    r.as_tuple<incorrect_tuple_t>(), pqxx::usage_error,
+    "pqxx::row::as_tuple does not throw expected exception for incorrect "
+    "tuple type");
+}
+
+
 PQXX_REGISTER_TEST(test_row);
 PQXX_REGISTER_TEST(test_row_iterator);
 PQXX_REGISTER_TEST(test_row_as);
 PQXX_REGISTER_TEST(test_row_iterator_array_index_offsets_iterator);
+PQXX_REGISTER_TEST(test_row_as_tuple);
 } // namespace

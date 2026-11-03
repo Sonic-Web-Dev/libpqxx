@@ -10,7 +10,7 @@
  * Include this file at the highest aggregation level possible to avoid nesting
  * and to keep things simple.
  *
- * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+ * Copyright (c) 2000-2025, Jeroen T. Vermeulen.
  *
  * See COPYING for copyright license.  If you did not receive a file called
  * COPYING with this source code, please notify the distributor of this
@@ -64,9 +64,11 @@
 #endif
 
 // C++20: No longer needed.
-// Enable ISO-646 alternative operaotr representations: "and" instead of "&&"
-// etc. on older compilers.  C++20 removes this header.
-#if PQXX_CPLUSPLUS <= 201703L && __has_include(<ciso646>)
+// Enable ISO-646 alternative operator representations: "and" instead of "&&"
+// etc. on older compilers.  C++17 deprecates this header; C++20 removes it.
+#if defined(_MSC_VER) && __has_include(<ciso646>) && PQXX_CPLUSPLUS <= 201703L
+// MSVC.  This compiler is being difficult: it requires us to include this
+// header in C++17, but will also complain that it's deprecated.
 #  include <ciso646>
 #endif
 
@@ -181,11 +183,8 @@
 
 
 // C++23: Assume support.
-// C++20: Assume __has_cpp_attribute is defined.
-#if !defined(__has_cpp_attribute)
-#  define PQXX_ASSUME(condition) while (false)
-#elif !__has_cpp_attribute(assume)
-#  define PQXX_ASSUME(condition) while (false)
-#else
+#if defined(PQXX_HAVE_ASSUME)
 #  define PQXX_ASSUME(condition) [[assume(condition)]]
+#else
+#  define PQXX_ASSUME(condition) while (false)
 #endif

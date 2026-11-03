@@ -1,6 +1,6 @@
 /** Internal string encodings support for libpqxx
  *
- * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+ * Copyright (c) 2000-2025, Jeroen T. Vermeulen.
  *
  * See COPYING for copyright license.  If you did not receive a file called
  * COPYING with this source code, please notify the distributor of this
@@ -15,12 +15,6 @@
 
 #include "pqxx/internal/concat.hxx"
 #include "pqxx/internal/encoding_group.hxx"
-
-
-namespace pqxx
-{
-PQXX_DECLARE_ENUM_CONVERSION(pqxx::internal::encoding_group);
-} // namespace pqxx
 
 
 namespace pqxx::internal
@@ -835,7 +829,10 @@ get_char_finder(encoding_group enc)
 
   default:
     throw pqxx::internal_error{concat(
-      "Unexpected encoding group: ", as_if, " (mapped from ", enc, ").")};
+      "Unexpected encoding group: ",
+      static_cast<std::underlying_type_t<encoding_group>>(as_if),
+      " (mapped from ",
+      static_cast<std::underlying_type_t<encoding_group>>(enc), ").")};
   }
 }
 
@@ -870,7 +867,10 @@ get_s_char_finder(encoding_group enc)
 
   default:
     throw pqxx::internal_error{concat(
-      "Unexpected encoding group: ", as_if, " (mapped from ", enc, ").")};
+      "Unexpected encoding group: ",
+      static_cast<std::underlying_type_t<encoding_group>>(as_if),
+      " (mapped from ",
+      static_cast<std::underlying_type_t<encoding_group>>(enc), ").")};
   }
 }
 } // namespace pqxx::internal

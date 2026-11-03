@@ -2,7 +2,7 @@
  *
  * DO NOT INCLUDE THIS FILE DIRECTLY; include pqxx/util instead.
  *
- * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+ * Copyright (c) 2000-2025, Jeroen T. Vermeulen.
  *
  * See COPYING for copyright license.  If you did not receive a file called
  * COPYING with this source code, please notify the distributor of this
@@ -47,9 +47,9 @@ namespace pqxx
 // C++23: Retire wrapper.
 // PQXX_UNREACHABLE: equivalent to `std::unreachable()` if available.
 #if !defined(__cpp_lib_unreachable)
-#  define PQXX_UNREACHABLE assert(false)
+#  define PQXX_UNREACHABLE while (false)
 #elif !__cpp_lib_unreachable
-#  define PQXX_UNREACHABLE assert(false)
+#  define PQXX_UNREACHABLE while (false)
 #else
 #  define PQXX_UNREACHABLE std::unreachable()
 #endif
@@ -276,7 +276,7 @@ struct PQXX_LIBEXPORT thread_safety_model
 [[nodiscard]] PQXX_LIBEXPORT thread_safety_model describe_thread_safety();
 
 
-#if defined(PQXX_HAVE_CONCEPTS)
+#if defined(PQXX_HAVE_CONCEPTS) && defined(PQXX_HAVE_RANGES)
 #  define PQXX_POTENTIAL_BINARY_ARG pqxx::potential_binary
 #else
 #  define PQXX_POTENTIAL_BINARY_ARG typename

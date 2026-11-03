@@ -4,7 +4,7 @@
  *
  * DO NOT INCLUDE THIS FILE DIRECTLY; include pqxx/except instead.
  *
- * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+ * Copyright (c) 2000-2025, Jeroen T. Vermeulen.
  *
  * See COPYING for copyright license.  If you did not receive a file called
  * COPYING with this source code, please notify the distributor of this
@@ -137,8 +137,8 @@ class PQXX_LIBEXPORT sql_error : public failure
 
 public:
   explicit sql_error(
-    std::string whatarg = "", std::string const &Q = "",
-    char const sqlstate[] = nullptr
+    std::string const &whatarg = "", std::string Q = "",
+    char const *sqlstate = nullptr
 #if defined(PQXX_HAVE_SOURCE_LOCATION)
     ,
     std::source_location = std::source_location::current()

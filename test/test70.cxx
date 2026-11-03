@@ -90,8 +90,10 @@ void test_070()
   // See if regular retain()/resume() works
   for (int i{0}; i < 5; ++i) TestPipeline(P, i);
 
-  // See if retrieve() fails on an empty pipeline, as it should
+    // See if retrieve() fails on an empty pipeline, as it should
+#include "pqxx/internal/ignore-deprecated-pre.hxx"
   quiet_errorhandler d(cx);
+#include "pqxx/internal/ignore-deprecated-post.hxx"
   PQXX_CHECK_THROWS_EXCEPTION(
     P.retrieve(), "Empty pipeline allows retrieve().");
 }

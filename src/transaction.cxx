@@ -2,7 +2,7 @@
  *
  * pqxx::transaction represents a regular database transaction.
  *
- * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+ * Copyright (c) 2000-2025, Jeroen T. Vermeulen.
  *
  * See COPYING for copyright license.  If you did not receive a file called
  * COPYING with this source code, please notify the distributor of this
@@ -71,7 +71,7 @@ void pqxx::internal::basic_transaction::do_commit()
     process_notice(internal::concat(e.what(), "\n"));
 
     std::string msg{internal::concat(
-      "WARNING: Commit of transaction '", name(),
+      "WARNING: Commit status of transaction '", name(),
       "' is unknown. "
       "There is no way to tell whether the transaction succeeded "
       "or was aborted except to check manually.\n")};

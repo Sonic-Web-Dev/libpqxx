@@ -73,10 +73,11 @@ First off, of course, you need a C++ type.  It may be your own, but it doesn't
 have to be.  It could be a type from a third-party library, or even one from
 the standard library that libpqxx does not yet support.
 
-First thing to do is specialise the `pqxx::type_name` variable to give the type
-a human-readable name.  That allows libpqxx error messages and such to talk
-about the type.  If you don't define a name, libpqxx will try to figure one out
-with some help from the compiler, but it may not always be easy to read.
+First thing to do is specialise the `pqxx::name_type()` function template to
+give the type a human-readable name.  It's not strictly needed, but it helps:
+Human-facing text such as error messages may need to mention the type by name.
+If you don't define one, libpqxx will try to figure one out with some help from
+the compiler, but it may not always be easy to read.
 
 Then, does your type have a built-in null value?  For example, a `char *` can
 be null on the C++ side.  Or some types are _always_ null, such as `nullptr`.
@@ -111,31 +112,43 @@ The library also provides specialisations for `std::optional<T>`,
 `T`, you'll also automatically have conversions for those.
 
 
-Specialise `type_name`
-----------------------
+Specialise `name_type()`
+------------------------
 
-When errors happen during conversion, libpqxx will compose error messages for
-the user.  Sometimes these will include the name of the type that's being
+When errors happen during conversion, libpqxx will compose an error message for
+the user.  Sometimes this message will mention the name of the type that's being
 converted.
 
-To tell libpqxx the name of each type, there's a template variable called
-`pqxx::type_name`.  For any given type `T`, it should have a specialisation
-that provides that `T`'s human-readable name:
+By default, this will work fine when using the gcc or clang compilers, but the
+name may come out a little strange on other compilers, or even illegible due to
+the compiler's name mangling.  So, it can help to define a name yourself.
+
+To tell libpqxx the name of a given type `T`, specialise the template function
+`name_type<T>()`.  It should return `T`'s human-readable name:
 
 ```cxx
     // T is your type.
     namespace pqxx
     {
-    template<> std::string const type_name<T>{"My T type's name"};
+    template<> inline std::string_view name_type<T>() noexcept
+    {
+      return "My T type's name";
     }
+    } // namespace pqxx
 ```
-
-(Yes, this means that you need to define something inside the pqxx namespace.
-Future versions of libpqxx may move this into a separate namespace.)
 
 Define this early on in your translation unit, before any code that might cause
 libpqxx to need the name.  That way, the libpqxx code which needs to know the
 type's name can see your definition.
+
+In cases where the name is not a simple compile-time constant but needs code
+to compute, it may help to compose it inside the function as a
+`static std::string const` variable, and then return a `std::string_view` on
+that.  A `string_view` does not maintain storage space for the text it
+contains, but a `std::string` does.
+
+This entire problem goes away in libpqxx 8 when compiling C++26 or better.
+Then there will be no need to bother with this at all.
 
 
 Specialise `nullness`

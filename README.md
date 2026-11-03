@@ -28,6 +28,13 @@ commits in `master`.  For example, to get version 7.1.1:
 ```
 
 
+Thank you!
+----------
+
+Somebody who deserves special mention here: our first Donor-level sponsor is
+Klaus ([@klaussilveira](https://github.com/klaussilveira)).  Thank you, Klaus!
+
+
 Upgrade notes
 -------------
 
@@ -149,7 +156,7 @@ Here's an example with all the basics to get you going:
             // Execute a statement, and check that it returns 0 rows of data.
             // This will throw pqxx::unexpected_rows if the query returns rows.
             std::cout << "Doubling all employees' salaries...\n";
-            tx.exec0("UPDATE employee SET salary = salary*2");
+            tx.exec("UPDATE employee SET salary = salary*2").no_rows();
 
             // Shorthand: conveniently query a single value from the database.
             int my_salary = tx.query_value<int>(

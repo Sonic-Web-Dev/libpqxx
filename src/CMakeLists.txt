@@ -26,7 +26,7 @@ macro(library_target_setup tgt)
     	PRIVATE
     		${PostgreSQL_INCLUDE_DIRS}
     )
-    target_link_libraries(${tgt} PRIVATE ${PostgreSQL_LIBRARIES})
+    target_link_libraries(${tgt} PRIVATE PostgreSQL::PostgreSQL)
     if(WIN32)
         target_link_libraries(${tgt} PUBLIC wsock32 ws2_32)
     endif()

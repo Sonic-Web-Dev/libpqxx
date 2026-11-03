@@ -122,6 +122,15 @@ check_compiler_internal_headers() {
 }
 
 
+check_yaml() {
+    # Skipping this.  It's too much trouble.  The warnings are all fixed up in
+    # the 8.0 release branch.
+    #
+    # yamllint "$SRCDIR"
+    echo "Not linting YAML."
+}
+
+
 cpplint() {
     local dialect includes
 
@@ -217,6 +226,7 @@ EOF
     check_news_version
     check_compiler_internal_headers
     mdlint
+    check_yaml
     if [ $full == "yes" ]
     then
         cpplint

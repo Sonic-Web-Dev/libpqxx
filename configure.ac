@@ -125,6 +125,7 @@ then
 		# "Eternal" (FLW) g++ options.  These have been around for
 		# ages, and both g++ and clang++ support them.  Don't bother
 		# checking for support; just add them to the compiler options.
+		# TODO: Add -D_GLIBCXX_CONCEPT_CHECKS in 8.0.
 		add_compiler_opts \
 			-fstrict-enums \
 			-Werror \
@@ -157,7 +158,10 @@ then
 
 		# "Iffy" g++ options.  Some reasonably current g++-like
 		# compilers may not support these.
-# TODO: Once false positive in std lib is fixed, simplify to "-fanalyzer".
+		#
+		# The -fanalyzer one is a macro option for many of the others,
+		# but we can't use it because as of gcc 13.2.0 we still see it
+		# generating errors for the standard library.
 		add_compiler_opts_if_ok \
 			-Wanalyzer-double-fclose \
 			-Wanalyzer-double-free \
@@ -165,6 +169,7 @@ then
 			-Wanalyzer-file-leak \
 			-Wanalyzer-free-of-non-heap \
 			-Wanalyzer-malloc-leak \
+			-Wanalyzer-possible-null-dereference \
 			-Wanalyzer-mismatching-deallocation \
 			-Wanalyzer-null-dereference \
 			-Wanalyzer-null-argument \
@@ -172,6 +177,7 @@ then
 			-Wanalyzer-shift-count-negative \
 			-Wanalyzer-overflow \
 			-Wanalyzer-stale-setjmp-buffer \
+			-Wanalyzer-tainted-array-index \
 			-Wanalyzer-unsafe-call-within-signal-handler \
 			-Wanalyzer-use-after-free \
 			-Wanalyzer-use-of-pointer-in-stale-stack-frame \
@@ -180,9 +186,9 @@ then
 			-Wanalyzer-write-to-string-literal \
 			-fnothrow-opt \
 			-Wattribute-alias=2 \
+			-Wdeprecated-literal-operator \
 			-Wlogical-op \
 			-Wmismatched-tags \
-			-Wnoexcept \
 			-Wredundant-tags \
 			-Wrestrict \
 			-Wstringop-overflow \
@@ -199,6 +205,10 @@ then
 	then
 		add_compiler_opts_if_ok \
 			-D_FORTIFY_SOURCE=2 \
+			-D_GLIBCXX_ASSERTIONS \
+			-D_GLIBCXX_DEBUG \
+			-D_GLIBCXX_DEBUG_PEDANTIC \
+			-D_GLIBCXX_SANITIZE_VECTOR \
 			-fsanitize=address \
 			-fsanitize-address-use-after-scope \
 			-fsanitize=alignment \
@@ -462,7 +472,7 @@ if test "$found_fslib" != "yes"
 then
 	AC_MSG_ERROR([
 There seems to be <filesystem> support, but I could not figure out now to make
-it work.  You'll have to add set your own build options for this.
+it work.  You'll have to set your own build options for this.
 	])
 fi
 AC_MSG_RESULT($result_msg)

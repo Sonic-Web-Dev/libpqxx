@@ -1,6 +1,6 @@
 /** Implementation of bytea (binary string) conversions.
  *
- * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+ * Copyright (c) 2000-2025, Jeroen T. Vermeulen.
  *
  * See COPYING for copyright license.  If you did not receive a file called
  * COPYING with this source code, please notify the distributor of this
@@ -36,6 +36,7 @@ std::shared_ptr<unsigned char>
   PQXX_COLD copy_to_buffer(void const *data, std::size_t len)
 {
   std::shared_ptr<unsigned char> ptr{
+    // NOLINTNEXTLINE(cppcoreguidelines-no-malloc,hicpp-no-malloc)
     static_cast<unsigned char *>(malloc(len + 1)), std::free};
   if (not ptr)
     throw std::bad_alloc{};

@@ -2,7 +2,7 @@
  *
  * pqxx::result represents the set of result rows from a database query.
  *
- * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+ * Copyright (c) 2000-2025, Jeroen T. Vermeulen.
  *
  * See COPYING for copyright license.  If you did not receive a file called
  * COPYING with this source code, please notify the distributor of this
@@ -27,9 +27,8 @@ extern "C"
 #include "pqxx/internal/header-post.hxx"
 
 
-pqxx::row::row(
-  result const &r, result::size_type index, size_type cols) noexcept :
-        m_result{r}, m_index{index}, m_end{cols}
+pqxx::row::row(result r, result::size_type index, size_type cols) noexcept :
+        m_result{std::move(r)}, m_index{index}, m_end{cols}
 {}
 
 

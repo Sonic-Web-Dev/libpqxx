@@ -1,6 +1,6 @@
 /** Various utility functions.
  *
- * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+ * Copyright (c) 2000-2025, Jeroen T. Vermeulen.
  *
  * See COPYING for copyright license.  If you did not receive a file called
  * COPYING with this source code, please notify the distributor of this
@@ -110,8 +110,7 @@ constexpr std::array<char, 16u> hex_digits{
 /// Translate a number (must be between 0 and 16 exclusive) to a hex digit.
 constexpr char hex_digit(int c) noexcept
 {
-  assert(c >= 0 and c < pqxx::internal::ssize(hex_digits));
-  return hex_digits[static_cast<unsigned int>(c)];
+  return hex_digits.at(static_cast<unsigned int>(c));
 }
 
 
@@ -207,6 +206,7 @@ void pqfreemem(void const *ptr) noexcept
 {
   // Why is it OK to const_cast here?  Because this is the C equivalent to a
   // destructor.  Those apply to const objects as well as non-const ones.
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
   PQfreemem(const_cast<void *>(ptr));
 }
 } // namespace pqxx::internal::pq

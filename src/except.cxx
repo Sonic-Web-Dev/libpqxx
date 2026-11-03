@@ -1,6 +1,6 @@
 /** Implementation of libpqxx exception classes.
  *
- * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+ * Copyright (c) 2000-2025, Jeroen T. Vermeulen.
  *
  * See COPYING for copyright license.  If you did not receive a file called
  * COPYING with this source code, please notify the distributor of this
@@ -83,20 +83,20 @@ pqxx::variable_set_to_null::variable_set_to_null(
 
 
 pqxx::sql_error::sql_error(
-  std::string whatarg, std::string const &Q, char const sqlstate[]
+  std::string const &whatarg, std::string Q, char const *sqlstate
 #if defined(PQXX_HAVE_SOURCE_LOCATION)
   ,
   std::source_location loc
 #endif
   ) :
         failure{
-          std::move(whatarg)
+          whatarg
 #if defined(PQXX_HAVE_SOURCE_LOCATION)
-            ,
+          ,
           loc
 #endif
         },
-        m_query{Q},
+        m_query{std::move(Q)},
         m_sqlstate{sqlstate ? sqlstate : ""}
 {}
 

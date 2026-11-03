@@ -58,6 +58,9 @@
 #undef PACKAGE_VERSION
 
 /* Define if this feature is available. */
+#undef PQXX_HAVE_ASSUME
+
+/* Define if this feature is available. */
 #undef PQXX_HAVE_CHARCONV_FLOAT
 
 /* Define if this feature is available. */
@@ -89,6 +92,9 @@
 
 /* Define if this feature is available. */
 #undef PQXX_HAVE_POLL
+
+/* Define if this feature is available. */
+#undef PQXX_HAVE_RANGES
 
 /* Define if this feature is available. */
 #undef PQXX_HAVE_SLEEP_FOR

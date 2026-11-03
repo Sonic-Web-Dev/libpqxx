@@ -2,7 +2,7 @@
  *
  * See @ref connection and @ref transaction_base for more.
  *
- * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+ * Copyright (c) 2000-2025, Jeroen T. Vermeulen.
  *
  * See COPYING for copyright license.  If you did not receive a file called
  * COPYING with this source code, please notify the distributor of this
@@ -93,7 +93,7 @@ public:
    */
   void append(bytes const &) &;
 
-#if defined(PQXX_HAVE_CONCEPTS)
+#if defined(PQXX_HAVE_CONCEPTS) && defined(PQXX_HAVE_RANGES)
   /// Append a non-null binary parameter.
   /** The `data` object must stay in place and unchanged, for as long as the
    * `params` remains active.
@@ -147,7 +147,7 @@ public:
   /// Append all elements of `range` as parameters.
   template<PQXX_RANGE_ARG RANGE> void append_multi(RANGE const &range) &
   {
-#if defined(PQXX_HAVE_CONCEPTS)
+#if defined(PQXX_HAVE_CONCEPTS) && defined(PQXX_HAVE_RANGES)
     if constexpr (std::ranges::sized_range<RANGE>)
       reserve(std::size(*this) + std::size(range));
 #endif

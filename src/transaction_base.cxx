@@ -3,7 +3,7 @@
  * pqxx::transaction_base defines the interface for any abstract class that
  * represents a database transaction.
  *
- * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+ * Copyright (c) 2000-2025, Jeroen T. Vermeulen.
  *
  * See COPYING for copyright license.  If you did not receive a file called
  * COPYING with this source code, please notify the distributor of this
@@ -81,6 +81,7 @@ pqxx::transaction_base::~transaction_base()
     }
     catch (std::exception const &)
     {
+      // TODO: Make at least an attempt to append a newline.
       process_notice(e.what());
     }
   }
@@ -301,6 +302,16 @@ pqxx::result pqxx::transaction_base::internal_exec_params(
 }
 
 
+void pqxx::transaction_base::notify(
+  std::string_view channel, std::string_view payload)
+{
+  // For some reason, NOTIFY does not work as a parameterised statement,
+  // even just for the payload (which is supposed to be a normal string).
+  // Luckily, pg_notify() does.
+  exec("SELECT pg_notify($1, $2)", params{channel, payload}).one_row();
+}
+
+
 void pqxx::transaction_base::set_variable(
   std::string_view var, std::string_view value)
 {
@@ -328,6 +339,7 @@ void pqxx::transaction_base::close() noexcept
     }
     catch (std::exception const &e)
     {
+      // TODO: Make at least an attempt to append a newline.
       m_conn.process_notice(e.what());
     }
 
@@ -353,6 +365,7 @@ void pqxx::transaction_base::close() noexcept
     }
     catch (std::exception const &e)
     {
+      // TODO: Make at least an attempt to append a newline.
       m_conn.process_notice(e.what());
     }
   }
@@ -360,6 +373,7 @@ void pqxx::transaction_base::close() noexcept
   {
     try
     {
+      // TODO: Make at least an attempt to append a newline.
       m_conn.process_notice(e.what());
     }
     catch (std::exception const &)
@@ -406,7 +420,8 @@ void pqxx::transaction_base::unregister_focus(
   }
   catch (std::exception const &e)
   {
-    m_conn.process_notice(internal::concat(e.what(), "\n"));
+    // TODO: Make at least an attempt to append a newline.
+    m_conn.process_notice(e.what());
   }
 }
 
@@ -442,8 +457,9 @@ void pqxx::transaction_base::register_pending_error(zview err) noexcept
       {
         PQXX_UNLIKELY
         process_notice("UNABLE TO PROCESS ERROR\n");
+        // TODO: Make at least an attempt to append a newline.
         process_notice(e.what());
-        process_notice("ERROR WAS:");
+        process_notice("ERROR WAS:\n");
         process_notice(err);
       }
       catch (...)
@@ -467,8 +483,9 @@ void pqxx::transaction_base::register_pending_error(std::string &&err) noexcept
       {
         PQXX_UNLIKELY
         process_notice("UNABLE TO PROCESS ERROR\n");
+        // TODO: Make at least an attempt to append a newline.
         process_notice(e.what());
-        process_notice("ERROR WAS:");
+        process_notice("ERROR WAS:\n");
         process_notice(err);
       }
       catch (...)

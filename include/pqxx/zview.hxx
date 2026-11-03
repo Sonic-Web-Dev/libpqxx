@@ -2,7 +2,7 @@
  *
  * DO NOT INCLUDE THIS FILE DIRECTLY; include pqxx/zview instead.
  *
- * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+ * Copyright (c) 2000-2025, Jeroen T. Vermeulen.
  *
  * See COPYING for copyright license.  If you did not receive a file called
  * COPYING with this source code, please notify the distributor of this
@@ -108,14 +108,21 @@ public:
  * using pqxx::operator"" _zv;
  * ```
  */
-constexpr zview operator"" _zv(char const str[], std::size_t len) noexcept
+constexpr zview operator""_zv(char const str[], std::size_t len) noexcept
 {
   return zview{str, len};
+}
+
+
+template<>
+PQXX_PURE constexpr inline std::string_view name_type<zview>() noexcept
+{
+  return "pqxx::zview";
 }
 } // namespace pqxx
 
 
-#if defined(PQXX_HAVE_CONCEPTS)
+#if defined(PQXX_HAVE_CONCEPTS) && __has_include(<ranges>)
 /// A zview is a view.
 template<> inline constexpr bool std::ranges::enable_view<pqxx::zview>{true};
 

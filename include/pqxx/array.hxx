@@ -2,7 +2,7 @@
  *
  * DO NOT INCLUDE THIS FILE DIRECTLY; include pqxx/field instead.
  *
- * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+ * Copyright (c) 2000-2025, Jeroen T. Vermeulen.
  *
  * See COPYING for copyright license.  If you did not receive a file called
  * COPYING with this source code, please notify the distributor of this
@@ -407,9 +407,9 @@ private:
               m_elts.emplace_back(nullness<ELEMENT>::null());
             else
               throw unexpected_null{pqxx::internal::concat(
-                "Array contains a null ", type_name<ELEMENT>,
+                "Array contains a null ", name_type<ELEMENT>(),
                 ".  Consider making it an array of std::optional<",
-                type_name<ELEMENT>, "> instead.")};
+                name_type<ELEMENT>(), "> instead.")};
           }
           else
             m_elts.emplace_back(from_string<ELEMENT>(field));

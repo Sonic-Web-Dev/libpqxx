@@ -2,7 +2,7 @@
  *
  * DO NOT INCLUDE THIS FILE DIRECTLY; include pqxx/version instead.
  *
- * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+ * Copyright (c) 2000-2025, Jeroen T. Vermeulen.
  *
  * See COPYING for copyright license.  If you did not receive a file called
  * COPYING with this source code, please notify the distributor of this
@@ -16,16 +16,16 @@
 #  endif
 
 /// Full libpqxx version string.
-#  define PQXX_VERSION "7.9.3"
+#  define PQXX_VERSION "7.10.7"
 /// Library ABI version.
-#  define PQXX_ABI "7.9"
+#  define PQXX_ABI "7.10"
 
 /// Major version number.
 #  define PQXX_VERSION_MAJOR 7
 /// Minor version number.
-#  define PQXX_VERSION_MINOR 9
+#  define PQXX_VERSION_MINOR 10
 
-#  define PQXX_VERSION_CHECK check_pqxx_version_7_9
+#  define PQXX_VERSION_CHECK check_pqxx_version_7_10
 
 namespace pqxx::internal
 {

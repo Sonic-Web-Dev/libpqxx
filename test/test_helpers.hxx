@@ -61,7 +61,7 @@ struct registrar
 
 // Register a test function, so the runner will run it.
 #define PQXX_REGISTER_TEST(func)                                              \
-  pqxx::test::registrar tst_##func                                            \
+  [[maybe_unused]] pqxx::test::registrar tst_##func                           \
   {                                                                           \
     #func, func                                                               \
   }
@@ -118,7 +118,7 @@ inline void check_equal(
 #if !defined(PQXX_HAVE_SOURCE_LOCATION)
   char const file[], int line,
 #endif
-  ACTUAL actual, char const actual_text[], EXPECTED expected,
+  ACTUAL const &actual, char const actual_text[], EXPECTED const &expected,
   char const expected_text[], std::string const &desc
 #if defined(PQXX_HAVE_SOURCE_LOCATION)
   ,
@@ -157,8 +157,8 @@ inline void check_not_equal(
 #if !defined(PQXX_HAVE_SOURCE_LOCATION)
   char const file[], int line,
 #endif
-  VALUE1 value1, char const text1[], VALUE2 value2, char const text2[],
-  std::string const &desc
+  VALUE1 const &value1, char const text1[], VALUE2 const &value2,
+  char const text2[], std::string const &desc
 #if defined(PQXX_HAVE_SOURCE_LOCATION)
   ,
   std::source_location loc = std::source_location::current()
@@ -201,8 +201,8 @@ inline void check_less(
 #if !defined(PQXX_HAVE_SOURCE_LOCATION)
   char const file[], int line,
 #endif
-  VALUE1 value1, char const text1[], VALUE2 value2, char const text2[],
-  std::string const &desc
+  VALUE1 const &value1, char const text1[], VALUE2 const &value2,
+  char const text2[], std::string const &desc
 #if defined(PQXX_HAVE_SOURCE_LOCATION)
   ,
   std::source_location loc = std::source_location::current()
@@ -248,8 +248,8 @@ inline void check_less_equal(
 #if !defined(PQXX_HAVE_SOURCE_LOCATION)
   char const file[], int line,
 #endif
-  VALUE1 value1, char const text1[], VALUE2 value2, char const text2[],
-  std::string const &desc
+  VALUE1 const &value1, char const text1[], VALUE2 const &value2,
+  char const text2[], std::string const &desc
 #if defined(PQXX_HAVE_SOURCE_LOCATION)
   ,
   std::source_location loc = std::source_location::current()
@@ -376,8 +376,9 @@ inline void check_bounds(
 #if !defined(PQXX_HAVE_SOURCE_LOCATION)
   char const file[], int line,
 #endif
-  VALUE value, char const text[], LOWER lower, char const lower_text[],
-  UPPER upper, char const upper_text[], std::string const &desc
+  VALUE const &value, char const text[], LOWER const &lower,
+  char const lower_text[], UPPER const &upper, char const upper_text[],
+  std::string const &desc
 #if defined(PQXX_HAVE_SOURCE_LOCATION)
   ,
   std::source_location loc = std::source_location::current()
@@ -434,7 +435,7 @@ std::string list_row(row);
 // Represent result as string.
 std::string list_result(result);
 // Represent result iterator as string.
-std::string list_result_iterator(result::const_iterator);
+std::string list_result_iterator(result::const_iterator const &);
 
 
 // @deprecated Set up test data for legacy tests.

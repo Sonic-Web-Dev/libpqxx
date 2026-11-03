@@ -2,7 +2,7 @@
  *
  * DO NOT INCLUDE THIS FILE DIRECTLY; include pqxx/stringconv instead.
  *
- * Copyright (c) 2000-2024, Jeroen T. Vermeulen.
+ * Copyright (c) 2000-2025, Jeroen T. Vermeulen.
  *
  * See COPYING for copyright license.  If you did not receive a file called
  * COPYING with this source code, please notify the distributor of this
@@ -24,20 +24,13 @@
 #include <typeinfo>
 
 // C++20: Assume support.
-#if __has_include(<ranges>)
+#if defined(PQXX_HAVE_RANGES)
 #  include <ranges>
 #endif
 
 #include "pqxx/except.hxx"
 #include "pqxx/util.hxx"
 #include "pqxx/zview.hxx"
-
-
-namespace pqxx::internal
-{
-/// Attempt to demangle @c std::type_info::name() to something human-readable.
-PQXX_LIBEXPORT std::string demangle_type_name(char const[]);
-} // namespace pqxx::internal
 
 
 namespace pqxx
@@ -66,20 +59,6 @@ namespace pqxx
  * types.  The conversion will represent enumeration values as numeric strings.
  */
 //@{
-
-/// A human-readable name for a type, used in error messages and such.
-/** Actually this may not always be very user-friendly.  It uses
- * @c std::type_info::name().  On gcc-like compilers we try to demangle its
- * output.  Visual Studio produces human-friendly names out of the box.
- *
- * This variable is not inline.  Inlining it gives rise to "memory leak"
- * warnings from asan, the address sanitizer, possibly from use of
- * @c std::type_info::name.
- */
-template<typename TYPE>
-std::string const type_name{internal::demangle_type_name(typeid(TYPE).name())};
-
-
 /// Traits describing a type's "null value," if any.
 /** Some C++ types have a special value or state which correspond directly to
  * SQL's NULL.
@@ -147,7 +126,8 @@ template<typename TYPE> struct no_null
  * and from_string support.
  *
  * String conversions are not meant to work for nulls.  Check for null before
- * converting a value of @c TYPE to a string, or vice versa.
+ * converting a value of @c TYPE to a string, or vice versa, and handle them
+ * separately.
  */
 template<typename TYPE> struct string_traits
 {
@@ -213,7 +193,7 @@ template<typename TYPE> struct string_traits
   [[nodiscard]] static inline std::size_t
   size_buffer(TYPE const &value) noexcept;
 
-  // TODO: Move is_unquoted_string into the traits after all?
+  // TODO: Move is_unquoted_safe into the traits after all?
 };
 
 
@@ -414,7 +394,12 @@ private:
 #define PQXX_DECLARE_ENUM_CONVERSION(ENUM)                                    \
   template<> struct string_traits<ENUM> : pqxx::internal::enum_traits<ENUM>   \
   {};                                                                         \
-  template<> inline std::string_view const type_name<ENUM>                    \
+  template<>                                                                  \
+  inline constexpr PQXX_PURE std::string_view name_type<ENUM>() noexcept      \
+  {                                                                           \
+    return #ENUM;                                                             \
+  }                                                                           \
+  template<> [[maybe_unused]] inline std::string_view const type_name<ENUM>   \
   {                                                                           \
     #ENUM                                                                     \
   }
@@ -595,7 +580,7 @@ inline zview generic_to_buf(char *begin, char *end, TYPE const &value)
 }
 
 
-#if defined(PQXX_HAVE_CONCEPTS)
+#if defined(PQXX_HAVE_CONCEPTS) && defined(PQXX_HAVE_RANGES)
 /// Concept: Binary string, akin to @c std::string for binary data.
 /** Any type that satisfies this concept can represent an SQL BYTEA value.
  *
